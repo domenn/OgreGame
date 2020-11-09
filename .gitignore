@@ -1,0 +1,13 @@
+# User-specific stuff
+.idea/*
+
+# CMake
+cmake-build-*/
+
+# File-based project format
+*.iws
+
+vsp_static/
+vs_no_vcpkg/
+
+
