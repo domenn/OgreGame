@@ -31,8 +31,8 @@ file(GLOB_RECURSE mainSources LIST_DIRECTORIES false
 # set(OGRE_DIR C:/OgreSdk/ogre_src/vsbuild_debug/sdk/CMake)
 set(OGRE_DIR C:/OgreSdk/installDEBUG/CMake)
 find_package(OGRE 1.11 REQUIRED COMPONENTS Bites RTShaderSystem)
-file(COPY ${OGRE_CONFIG_DIR}/resources.cfg DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY ${OGRE_CONFIG_DIR}/plugins.cfg DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+# file(COPY ${OGRE_CONFIG_DIR}/resources.cfg DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+# file(COPY ${OGRE_CONFIG_DIR}/plugins.cfg DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 #file(COPY ${OGRE_CONFIG_DIR}/debug/lib/resources.cfg DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/debug_config)
 #file(COPY ${OGRE_CONFIG_DIR}/debug/lib/plugins.cfg DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/debug_config)
 

@@ -1,0 +1,30 @@
+BasedOnStyle: Google
+
+#AccessModifierOffset: -2
+#AllowShortIfStatementsOnASingleLine: Never
+ColumnLimit: 120
+# IndentWidth: 2
+#IndentCaseLabels: false
+#SortIncludes: false
+#ConstructorInitializerAllOnOneLineOrOnePerLine: true
+#AlwaysBreakTemplateDeclarations: Yes
+#UseTab: Never
+BinPackArguments: false
+# Cpp11BracedListStyle: false
+BinPackParameters: false
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+FixNamespaceComments: true
+BreakBeforeBraces: Attach
+#AllowShortCaseLabelsOnASingleLine: false
+#AllowShortFunctionsOnASingleLine: Inline
+
+IncludeCategories:
+  - Regex:           '^<[wW]indows[.]h>'
+    Priority:        -10
+    SortPriority:    -9
+  - Regex:           '^["<].*windows_headers[.]hpp[">]'
+    Priority:        -10
+    SortPriority:    -10
+  - Regex:           '^<shellapi[.]h>'
+    Priority:        -10
+    SortPriority:    -8
