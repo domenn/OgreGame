@@ -43,4 +43,4 @@ message(STATUS "OGRE_CONFIG_DIR is  ${OGRE_CONFIG_DIR}")
 
 
 add_executable(OgreGame ${mainSources})
-target_link_libraries(OgreGame PRIVATE OgreBites OgreRTShaderSystem)
+target_link_libraries(OgreGame PRIVATE OgreBites OgreOverlay OgreRTShaderSystem)
