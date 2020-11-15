@@ -12,14 +12,14 @@
 using namespace Ogre;
 using namespace OgreBites;
 
-void fpsgame::Improved2dAxisAlignedBox::clip_scene_node(Ogre::SceneNode* receiver) const {
+void fpsgame::Improved2dAxisAlignedBox::clip_scene_node_inside_plus_x(Ogre::SceneNode* receiver) const {
   const auto& pos = receiver->getPosition();
   // return(v.x >= mMinimum.x  &&  v.x <= mMaximum.x  &&
   //    v.y >= mMinimum.y  &&  v.y <= mMaximum.y  &&
   //    v.z >= mMinimum.z  &&  v.z <= mMaximum.z);
 
-  if (pos.x < mMinimum.x) {
-    receiver->setPosition(mMinimum.x, pos.y, pos.z);
+  if (pos.x < 0) {
+    receiver->setPosition(0, pos.y, pos.z);
   } else if (pos.x > mMaximum.x) {
     receiver->setPosition(mMaximum.x, pos.y, pos.z);
   }
@@ -118,6 +118,9 @@ bool fpsgame::FpsGame::keyReleased(const OgreBites::KeyboardEvent& evt) {
   }
   if (evt.keysym.sym >= SDLK_SPACE && evt.keysym.sym <= 'w') {
     key_latch_[evt.keysym.sym] = false;
+    if(evt.keysym.sym == 'q') {
+      fps_game_gui_.flip_settings();
+    }
   }
 
   camera_man_->keyReleased(evt);
@@ -158,20 +161,20 @@ void fpsgame::FpsGame::recreate_plane() {
 
 void fpsgame::FpsGame::wasd_move() {
   if (key_latch_['w']) {
-    move_within_xz(the_only_camera_node_, (the_only_camera_node_->getOrientation().zAxis() * -1));
-    bounding_box_playing_field_.clip_scene_node(the_only_camera_node_);
+    move_within_xz(the_only_camera_node_, the_only_camera_node_->getOrientation().zAxis() * -1);
+    bounding_box_playing_field_.clip_scene_node_inside_plus_x(the_only_camera_node_);
   }
   if (key_latch_['s']) {
     move_within_xz(the_only_camera_node_, (the_only_camera_node_->getOrientation().zAxis()));
-    bounding_box_playing_field_.clip_scene_node(the_only_camera_node_);
+    bounding_box_playing_field_.clip_scene_node_inside_plus_x(the_only_camera_node_);
   }
   if (key_latch_['a']) {
-    move_within_xz(the_only_camera_node_, (the_only_camera_node_->getOrientation().xAxis() * -1));
-    bounding_box_playing_field_.clip_scene_node(the_only_camera_node_);
+    move_within_xz(the_only_camera_node_, the_only_camera_node_->getOrientation().xAxis() * -1);
+    bounding_box_playing_field_.clip_scene_node_inside_plus_x(the_only_camera_node_);
   }
   if (key_latch_['d']) {
     move_within_xz(the_only_camera_node_, (the_only_camera_node_->getOrientation().xAxis()));
-    bounding_box_playing_field_.clip_scene_node(the_only_camera_node_);
+    bounding_box_playing_field_.clip_scene_node_inside_plus_x(the_only_camera_node_);
   }
 }
 

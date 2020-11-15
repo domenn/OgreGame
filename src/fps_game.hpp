@@ -13,10 +13,10 @@ class ImGuiInputListener;
 namespace fpsgame {
 
 struct PlaneParameters {
-  int plane_uv{10};
+  int plane_uv{18};
   int num_tex_coord_sets{1};
   int xy_segments{2};
-  int wh{3000};
+  int wh{16000};
 };
 
 class Improved2dAxisAlignedBox : public Ogre::AxisAlignedBox {
@@ -28,7 +28,8 @@ class Improved2dAxisAlignedBox : public Ogre::AxisAlignedBox {
     return *this;
   }
 
-  void clip_scene_node(Ogre::SceneNode* receiver) const;
+  // We simplify further by limiting player to +x half and obstacles to +x half
+  void clip_scene_node_inside_plus_x(Ogre::SceneNode* receiver) const;
 };
 
 class FpsGame : public OgreBites::ApplicationContext, public OgreBites::InputListener {

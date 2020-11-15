@@ -6,7 +6,7 @@ class FpsGame;
 
 class FiringComponent {
   FpsGame* game_;
-  float bullet_speed_{0.8f};
+  float bullet_speed_{4.8f};
   float gravity_spped_{-0.011f};
   Ogre::SceneNode* bullet_node_{};
   Ogre::Entity* bullet_physical_item_{};

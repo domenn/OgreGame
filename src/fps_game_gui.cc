@@ -65,10 +65,10 @@ void fpsgame::FpsGameGui::crosshair() {
 
 void fpsgame::FpsGameGui::plane_tools() {
   ImGui::Begin("Plane tools");
-  bool changed = ImGui::DragInt("uv_tiling", &fps_game_inst_->plane_parameters_.plane_uv, 1, 1, 64) |
+  bool changed = ImGui::DragInt("uv_tiling", &fps_game_inst_->plane_parameters_.plane_uv, 1, 1, 90) |
                  ImGui::DragInt("num_tex_coord_sets", &fps_game_inst_->plane_parameters_.num_tex_coord_sets, 1, 1, 32) |
                  ImGui::DragInt("xy_segments", &fps_game_inst_->plane_parameters_.xy_segments, 1, 1, 64) |
-                 ImGui::DragInt("wh", &fps_game_inst_->plane_parameters_.wh, 1, 1, 100000);
+                 ImGui::DragInt("wh", &fps_game_inst_->plane_parameters_.wh, 200, 1, 100000);
   ImGui::End();
 
   if (changed) {
@@ -101,20 +101,27 @@ void fpsgame::FpsGameGui::frame_started() {
     gun_rotation_[2] = orientation.y;
     gun_rotation_[3] = orientation.z;
   }
+  bool moving_camera{false};
+  if (settings_on_) {
+    ImGui::Begin("GenericSettings");
+    ImGui::DragFloat3("GunPosition", gun_position_, 1, -2600, 2600);
+    ImGui::DragFloat4("GunRotation(wxyz)", gun_rotation_, 0.001f, -4, 4);
+    moving_camera = ImGui::DragFloat3("CameraPosition", camera_position_, 1, -2600, 2600);
+    ImGui::DragFloat("Scale", &gun_scale_, 0.01f, -26, 26);
+    ImGui::DragFloat("Movement Speed", &fps_game_inst_->move_speed_, 0.25f, 1, 20);
+    ImGui::DragFloat("Bullet speed", fps_game_inst_->firing_component_.bullet_speed(), 1.f, -1, 2600);
+    ImGui::DragFloat("Bullet gravity", fps_game_inst_->firing_component_.gravity_speed(), 0.01f, -0.0001f, -0.0000001f);
+    ImGui::DragFloat("Obstacle size Max", fps_game_inst_->firing_component_.obstacle_size_max(), 0.1f, 0.1f, 6.f);
+    ImGui::DragFloat("Obstacle size Min", fps_game_inst_->firing_component_.obstacle_size_min(), 0.1f, 0.1f, 6.f);
+    experimental_obstacle_changed_ = ImGui::DragFloat("EXPERIMENTAL obstacle height",
+                                                      &fps_game_inst_->firing_component_.obstacle_height_experimental_,
+                                                      1.f,
+                                                      1.f,
+                                                      200.f);
+    ImGui::End();
 
-  ImGui::Begin("Positions");
-  ImGui::DragFloat3("GunPosition", gun_position_, 1, -2600, 2600);
-  ImGui::DragFloat4("GunRotation(wxyz)", gun_rotation_, 0.001f, -4, 4);
-  const auto moving_camera = ImGui::DragFloat3("CameraPosition", camera_position_, 1, -2600, 2600);
-  ImGui::DragFloat("Scale", &gun_scale_, 0.01f, -26, 26);
-  ImGui::DragFloat("Bullet speed", fps_game_inst_->firing_component_.bullet_speed(), 1.f, -1, 2600);
-  ImGui::DragFloat("Bullet gravity", fps_game_inst_->firing_component_.gravity_speed(), 0.01f, -0.0001f, -0.0000001f);
-  ImGui::DragFloat("Obstacle size Max", fps_game_inst_->firing_component_.obstacle_size_max(), 0.1f, 0.1f, 6.f);
-  ImGui::DragFloat("Obstacle size Min", fps_game_inst_->firing_component_.obstacle_size_min(), 0.1f, 0.1f, 6.f);
-  experimental_obstacle_changed_ = ImGui::DragFloat("EXPERIMENTAL obstacle height", &fps_game_inst_->firing_component_.obstacle_height_experimental_, 1.f, 1.f, 200.f);
-  ImGui::End();
-
-  plane_tools();
+    plane_tools();
+  }
 
   crosshair();
 

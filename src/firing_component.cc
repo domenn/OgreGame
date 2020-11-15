@@ -3,6 +3,9 @@
 #include "fps_game.hpp"
 #include "simple_random_generator.hpp"
 #include <OgreEntity.h>
+#include <OgreMaterial.h>
+#include <OgreSubEntity.h>
+#include <OgreTechnique.h>
 
 using namespace Ogre;
 using namespace OgreBites;
@@ -72,16 +75,45 @@ void fpsgame::FiringComponent::generic_remove(Ogre::SceneNode* node, Ogre::Entit
 }
 
 void fpsgame::FiringComponent::create_obstacle() {
-  const auto coord_x = SimpleRandomGenerator::generate(game_->bounding_box_playing_field_.getMinimum().x,
-                                                       game_->bounding_box_playing_field_.getMaximum().x);
+  // Player is limited to +x and obstacles to -x
+  const auto coord_x = SimpleRandomGenerator::generate(game_->bounding_box_playing_field_.getMinimum().x, -1);
   const auto coord_z = SimpleRandomGenerator::generate(game_->bounding_box_playing_field_.getMinimum().z,
                                                        game_->bounding_box_playing_field_.getMaximum().z);
   const auto height = SimpleRandomGenerator::generate(obstacle_size_min_, obstacle_size_max_);
 
   obstacle_ = game_->scn_mgr_->getRootSceneNode()->createChildSceneNode(game_->the_only_camera_node_->getPosition());
-  obstacle_physical_thing_ = game_->scn_mgr_->createEntity(Ogre::SceneManager::PT_CUBE);
+  // obstacle_physical_thing_ = game_->scn_mgr_->createEntity(Ogre::SceneManager::PT_CUBE);
+
+  obstacle_physical_thing_ = game_->scn_mgr_->createEntity("cube", "cube.mesh");
+  // obstacle_physical_thing_->setMaterialName("Examples/Chrome");
+
+  auto material_ptr = Ogre::MaterialManager::getSingleton().getByName(
+      "Examples/Chrome", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+
+  auto [cr, cg, cb] = std::make_tuple(SimpleRandomGenerator::generate(0.1f, 0.95f),
+                                      SimpleRandomGenerator::generate(0.1f, 0.95f),
+                                      SimpleRandomGenerator::generate(0.1f, 0.95f));
+
+  material_ptr->setDiffuse(cr, cg, cb, 0);
+  material_ptr->setAmbient(cr, cg, cb);
+
+  obstacle_physical_thing_->setMaterial(material_ptr);
+
+  // static int material_ctr{0};
+  // const auto new_mat_name = "clonedMat" + std::to_string(material_ctr++);
+  // auto cube_mat = obstacle_physical_thing_->getSubEntities()[0]->getMaterial()->clone(new_mat_name);
+  // cube_mat->getTechnique(0)->getPass(0)->setAmbient(SimpleRandomGenerator::generate(0.1f, 0.95f),
+  //                                                  SimpleRandomGenerator::generate(0.1f, 0.95f),
+  //                                                  SimpleRandomGenerator::generate(0.1f, 0.95f));
+  // cube_mat->getTechnique(0)->getPass(0)->setDiffuse(1, 0, 0, 0);
+  // obstacle_physical_thing_->setMaterial(cube_mat);
+
+  // MaterialPtr temp=MaterialManager::getSingleton( ).getByName( "Material/SOLID/TEX/Chrome.jpg" );
+  // mat=temp.get();
+  // mat->setAmbient(1,1,1);
+
   obstacle_->attachObject(obstacle_physical_thing_);
   obstacle_->setScale(height, height, height);
   // Experimentally determined the number we have to multiply with to have it be perfectly on the ground.
-  obstacle_->setPosition(coord_x, height*50.f, coord_z);
+  obstacle_->setPosition(coord_x, height * 50.f, coord_z);
 }
