@@ -1,4 +1,6 @@
 #pragma once
+#include "firing_component.hpp"
+#include "fps_game_gui.hpp"
 #include <OgreApplicationContext.h>
 #include <OgreRenderTargetListener.h>
 #include <memory>
@@ -9,16 +11,39 @@ class ImGuiInputListener;
 }  // namespace OgreBites
 
 namespace fpsgame {
+
+struct PlaneParameters {
+  int plane_uv{10};
+  int num_tex_coord_sets{1};
+  int xy_segments{2};
+  int wh{3000};
+};
+
+class Improved2dAxisAlignedBox : public Ogre::AxisAlignedBox {
+ public:
+  // enum class IntersectsWhere { N, E, S, W };
+
+  fpsgame::Improved2dAxisAlignedBox& operator=(AxisAlignedBox&& axis_aligned_box) noexcept {
+    Ogre::AxisAlignedBox::operator=(std::move(axis_aligned_box));
+    return *this;
+  }
+
+  void clip_scene_node(Ogre::SceneNode* receiver) const;
+};
+
 class FpsGame : public OgreBites::ApplicationContext, public OgreBites::InputListener {
-  float move_speed_{2.0f};
+  friend class FpsGameGui;
+  friend class GameSetupComponent;
+  friend class FiringComponent;
+
+  // Waste of memory. But who cares, this is a practice assignment, and PCs have "limitless" anyway ;)
+  bool key_latch_['w' + 1]{};
+
+  float move_speed_{3.f};
   bool mouse_grab_{true};
 
-  float camera_position_[3]{};
-  float gun_position_[3]{0, -56, -360};
-  float gun_rotation_[4]{0.772f, 0.083f, -0.63f, 0.0f};
-  float experimental_position_[3]{0.0f, 1.f, 0.0f};
-  float gun_scale_{1.0f};
-
+  FpsGameGui fps_game_gui_{this};
+  FiringComponent firing_component_{this};
   Ogre::Log* log_{};
 
   Ogre::Entity* player_entity_{};
@@ -28,13 +53,18 @@ class FpsGame : public OgreBites::ApplicationContext, public OgreBites::InputLis
   std::unique_ptr<Ogre::OverlaySystem> overlay_system_{};
   std::unique_ptr<OgreBites::ImGuiInputListener> imgui_listener_{};
   Ogre::SceneNode* gun_node_can_be_positioned_{};
+  Ogre::SceneManager* scn_mgr_{};
+  Ogre::SceneNode* plane_node_{};
+  Ogre::Entity* plane_entity_{};
+  PlaneParameters plane_parameters_{};
+  Improved2dAxisAlignedBox bounding_box_playing_field_{};
 
  public:
   FpsGame();
   ~FpsGame() override;
 
-  void setup_tutorial();
   void setup() override;
+
   bool frameStarted(const Ogre::FrameEvent& evt) override;
   // void preViewportUpdate(const Ogre::RenderTargetViewportEvent& evt) override;
 
@@ -45,10 +75,11 @@ class FpsGame : public OgreBites::ApplicationContext, public OgreBites::InputLis
   bool mouseWheelRolled(const OgreBites::MouseWheelEvent& evt) override;
   bool frameRenderingQueued(const Ogre::FrameEvent& evt) override;
   bool keyReleased(const OgreBites::KeyboardEvent& evt) override;
+  void recreate_plane();
+  void wasd_move();
 
   static void make_forward(Ogre::Vector3& v);
   void move_within_xz(Ogre::SceneNode* node, Ogre::Vector3&& raw_vector);
-  void setup_imgui(Ogre::SceneManager* scene_manager);
   // bool frameStarted(const Ogre::FrameEvent& evt) override;
 };
 }  // namespace fpsgame

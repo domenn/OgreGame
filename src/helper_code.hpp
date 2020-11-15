@@ -16,5 +16,4 @@ inline std::string quat_to_str(const Ogre::Quaternion& q) {
   //oss << "(" << v.x << ", " << v.y << ", " << v.z << ")";
   return oss.str();
 }
-
 }  // namespace fpsgame
