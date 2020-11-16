@@ -37,6 +37,7 @@ fpsgame::FpsGame::~FpsGame() = default;
 void fpsgame::FpsGame::setup() {
   OgreBites::ApplicationContext::setup();
   GameSetupComponent::setup(this);
+  obstacle_system_.setup();
 }
 
 bool fpsgame::FpsGame::frameStarted(const Ogre::FrameEvent& evt) {
@@ -44,6 +45,7 @@ bool fpsgame::FpsGame::frameStarted(const Ogre::FrameEvent& evt) {
 
   fps_game_gui_.frame_started();
   firing_component_.frame();
+  obstacle_system_.frame();
   wasd_move();
 
   return true;
@@ -187,4 +189,10 @@ void fpsgame::FpsGame::move_within_xz(Ogre::SceneNode* const node, Ogre::Vector3
   make_forward(raw_vector);
   raw_vector *= move_speed_;
   node->translate(raw_vector);
+}
+
+void fpsgame::FpsGame::generic_remove(Ogre::SceneNode* node, Ogre::Entity* entity) {
+  node->detachObject(entity);
+  scn_mgr_->destroyEntity(reinterpret_cast<Entity*>(entity));
+  scn_mgr_->destroySceneNode(node);
 }

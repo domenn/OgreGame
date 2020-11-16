@@ -9,7 +9,7 @@ namespace fpsgame {
 class FpsGame;
 
 class FpsGameGui {
-  fpsgame::FpsGame* const fps_game_inst_;
+  fpsgame::FpsGame* const game_;
 
   float camera_position_[3]{};
   float gun_position_[3]{0, -56, -360};

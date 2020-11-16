@@ -1,6 +1,7 @@
 #pragma once
 #include "firing_component.hpp"
 #include "fps_game_gui.hpp"
+#include "obstacle_system.hpp"
 #include <OgreApplicationContext.h>
 #include <OgreRenderTargetListener.h>
 #include <memory>
@@ -36,6 +37,7 @@ class FpsGame : public OgreBites::ApplicationContext, public OgreBites::InputLis
   friend class FpsGameGui;
   friend class GameSetupComponent;
   friend class FiringComponent;
+  friend class ObstacleSystem;
 
   // Waste of memory. But who cares, this is a practice assignment, and PCs have "limitless" anyway ;)
   bool key_latch_['w' + 1]{};
@@ -45,6 +47,7 @@ class FpsGame : public OgreBites::ApplicationContext, public OgreBites::InputLis
 
   FpsGameGui fps_game_gui_{this};
   FiringComponent firing_component_{this};
+  ObstacleSystem obstacle_system_{this};
   Ogre::Log* log_{};
 
   Ogre::Entity* player_entity_{};
@@ -81,6 +84,7 @@ class FpsGame : public OgreBites::ApplicationContext, public OgreBites::InputLis
 
   static void make_forward(Ogre::Vector3& v);
   void move_within_xz(Ogre::SceneNode* node, Ogre::Vector3&& raw_vector);
+  void generic_remove(Ogre::SceneNode* node, Ogre::Entity* entity);
   // bool frameStarted(const Ogre::FrameEvent& evt) override;
 };
 }  // namespace fpsgame

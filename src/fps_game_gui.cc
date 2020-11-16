@@ -65,14 +65,14 @@ void fpsgame::FpsGameGui::crosshair() {
 
 void fpsgame::FpsGameGui::plane_tools() {
   ImGui::Begin("Plane tools");
-  bool changed = ImGui::DragInt("uv_tiling", &fps_game_inst_->plane_parameters_.plane_uv, 1, 1, 90) |
-                 ImGui::DragInt("num_tex_coord_sets", &fps_game_inst_->plane_parameters_.num_tex_coord_sets, 1, 1, 32) |
-                 ImGui::DragInt("xy_segments", &fps_game_inst_->plane_parameters_.xy_segments, 1, 1, 64) |
-                 ImGui::DragInt("wh", &fps_game_inst_->plane_parameters_.wh, 200, 1, 100000);
+  bool changed = ImGui::DragInt("uv_tiling", &game_->plane_parameters_.plane_uv, 1, 1, 90) |
+                 ImGui::DragInt("num_tex_coord_sets", &game_->plane_parameters_.num_tex_coord_sets, 1, 1, 32) |
+                 ImGui::DragInt("xy_segments", &game_->plane_parameters_.xy_segments, 1, 1, 64) |
+                 ImGui::DragInt("wh", &game_->plane_parameters_.wh, 200, 1, 100000);
   ImGui::End();
 
   if (changed) {
-    fps_game_inst_->recreate_plane();
+    game_->recreate_plane();
   }
 }
 
@@ -81,18 +81,18 @@ void fpsgame::FpsGameGui::frame_started() {
 
   // ImGui::ShowDemoWindow();
 
-  if (fps_game_inst_->the_only_camera_node_) {
-    const auto& cam_pos = fps_game_inst_->the_only_camera_node_->getPosition();
+  if (game_->the_only_camera_node_) {
+    const auto& cam_pos = game_->the_only_camera_node_->getPosition();
     camera_position_[0] = cam_pos.x;
     camera_position_[1] = cam_pos.y;
     camera_position_[2] = cam_pos.z;
 
-    const auto& gpos = fps_game_inst_->gun_node_can_be_positioned_->getPosition();
+    const auto& gpos = game_->gun_node_can_be_positioned_->getPosition();
     gun_position_[0] = gpos.x;
     gun_position_[1] = gpos.y;
     gun_position_[2] = gpos.z;
 
-    const auto& orientation = fps_game_inst_->gun_node_can_be_positioned_->getOrientation();
+    const auto& orientation = game_->gun_node_can_be_positioned_->getOrientation();
     // std::tie(gun_rotation_[0], gun_rotation_[1], gun_rotation_[2], gun_rotation_[3]) =
     //    std::make_tuple(orientation.w, orientation.x, orientation.y, orientation.z);
 
@@ -108,16 +108,19 @@ void fpsgame::FpsGameGui::frame_started() {
     ImGui::DragFloat4("GunRotation(wxyz)", gun_rotation_, 0.001f, -4, 4);
     moving_camera = ImGui::DragFloat3("CameraPosition", camera_position_, 1, -2600, 2600);
     ImGui::DragFloat("Scale", &gun_scale_, 0.01f, -26, 26);
-    ImGui::DragFloat("Movement Speed", &fps_game_inst_->move_speed_, 0.25f, 1, 20);
-    ImGui::DragFloat("Bullet speed", fps_game_inst_->firing_component_.bullet_speed(), 1.f, -1, 2600);
-    ImGui::DragFloat("Bullet gravity", fps_game_inst_->firing_component_.gravity_speed(), 0.01f, -0.0001f, -0.0000001f);
-    ImGui::DragFloat("Obstacle size Max", fps_game_inst_->firing_component_.obstacle_size_max(), 0.1f, 0.1f, 6.f);
-    ImGui::DragFloat("Obstacle size Min", fps_game_inst_->firing_component_.obstacle_size_min(), 0.1f, 0.1f, 6.f);
-    experimental_obstacle_changed_ = ImGui::DragFloat("EXPERIMENTAL obstacle height",
-                                                      &fps_game_inst_->firing_component_.obstacle_height_experimental_,
-                                                      1.f,
-                                                      1.f,
-                                                      200.f);
+    ImGui::DragFloat("Movement Speed", &game_->move_speed_, 0.25f, 1, 20);
+    ImGui::DragFloat("Bullet speed", game_->firing_component_.bullet_speed(), 1.f, -1, 2600);
+    ImGui::DragFloat("Bullet gravity", game_->firing_component_.gravity_speed(), 0.01f, -0.0001f, -0.0000001f);
+    ImGui::DragInt("Min obstacles", game_->obstacle_system_.min_obstacles(), 1, 1, 199);
+    if (*game_->obstacle_system_.min_obstacles() > *game_->obstacle_system_.max_obstacles()) {
+      *game_->obstacle_system_.max_obstacles() = *game_->obstacle_system_.min_obstacles();
+    }
+    ImGui::DragInt("Max obstacles", game_->obstacle_system_.max_obstacles(), 1, 1, 200);
+
+    ImGui::DragFloat("Obstacle size Max", game_->obstacle_system_.obstacle_size_max(), 0.1f, 0.1f, 6.f);
+    ImGui::DragFloat("Obstacle size Min", game_->obstacle_system_.obstacle_size_min(), 0.1f, 0.1f, 6.f);
+    experimental_obstacle_changed_ = ImGui::DragFloat(
+        "EXPERIMENTAL obstacle height", &game_->obstacle_system_.obstacle_height_experimental_, 1.f, 1.f, 200.f);
     ImGui::End();
 
     plane_tools();
@@ -125,18 +128,18 @@ void fpsgame::FpsGameGui::frame_started() {
 
   crosshair();
 
-  if (fps_game_inst_->gun_node_can_be_positioned_) {
-    fps_game_inst_->gun_node_can_be_positioned_->setPosition(gun_position_[0], gun_position_[1], gun_position_[2]);
-    fps_game_inst_->gun_node_can_be_positioned_->setOrientation(
+  if (game_->gun_node_can_be_positioned_) {
+    game_->gun_node_can_be_positioned_->setPosition(gun_position_[0], gun_position_[1], gun_position_[2]);
+    game_->gun_node_can_be_positioned_->setOrientation(
         gun_rotation_[0], gun_rotation_[1], gun_rotation_[2], gun_rotation_[3]);
-    fps_game_inst_->gun_node_can_be_positioned_->setScale(gun_scale_, gun_scale_, gun_scale_);
+    game_->gun_node_can_be_positioned_->setScale(gun_scale_, gun_scale_, gun_scale_);
 
     // gun_node_can_be_positioned_->getChild(0)->setPosition(
     //    experimental_position_[0], experimental_position_[1], experimental_position_[2]);
   }
 
   if (moving_camera) {
-    fps_game_inst_->the_only_camera_node_->setPosition(camera_position_[0], camera_position_[1], camera_position_[2]);
+    game_->the_only_camera_node_->setPosition(camera_position_[0], camera_position_[1], camera_position_[2]);
   }
 }
 
@@ -147,7 +150,7 @@ void fpsgame::FpsGameGui::setup_imgui(Ogre::SceneManager* scene_manager) {
   imgui_overlay->show();
   Ogre::OverlayManager::getSingleton().addOverlay(imgui_overlay);  // now owned by overlaymgr
 
-  fps_game_inst_->imgui_listener_.reset(new OgreBites::ImGuiInputListener());
+  game_->imgui_listener_.reset(new OgreBites::ImGuiInputListener());
 }
 
-fpsgame::FpsGameGui::FpsGameGui(fpsgame::FpsGame* fps_game_inst) : fps_game_inst_(fps_game_inst) {}
+fpsgame::FpsGameGui::FpsGameGui(fpsgame::FpsGame* fps_game_inst) : game_(fps_game_inst) {}
