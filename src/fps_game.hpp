@@ -44,6 +44,7 @@ class FpsGame : public OgreBites::ApplicationContext, public OgreBites::InputLis
 
   float move_speed_{3.f};
   bool mouse_grab_{true};
+  int score_{0};
 
   FpsGameGui fps_game_gui_{this};
   FiringComponent firing_component_{this};

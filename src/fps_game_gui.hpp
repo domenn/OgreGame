@@ -1,4 +1,5 @@
 #pragma once
+#include <imgui.h>
 
 namespace Ogre {
 class SceneManager;
@@ -27,6 +28,7 @@ class FpsGameGui {
   [[nodiscard]] const float* gun_rotation() const { return gun_rotation_; }
 
   void plane_tools();
+  void info_text();
   void frame_started();
   void setup_imgui(Ogre::SceneManager* scene_manager);
   void flip_settings() { settings_on_ = !settings_on_; }

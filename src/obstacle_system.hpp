@@ -17,8 +17,8 @@ class ObstacleSystem {
 
   float obstacle_size_max_{2.f};
   float obstacle_size_min_{0.4f};
-  int max_obstacles_{24};
-  int min_obstacles_{8};
+  int max_obstacles_{5};
+  int min_obstacles_{2};
 
   void create_obstacle();
   void remove_obstacle(std::vector<ObstacleOgrePtrs>::iterator obstacle);
@@ -28,6 +28,7 @@ class ObstacleSystem {
   float obstacle_height_experimental_{2.f};
   ObstacleSystem(FpsGame* game);
 
+  void score(std::vector<ObstacleOgrePtrs>::const_iterator obstacle);
   // Call after frame() of firing component, so bullet has already been moved.
   void frame();
   float* obstacle_size_max() { return &obstacle_size_max_; }

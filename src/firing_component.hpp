@@ -1,4 +1,5 @@
 #pragma once
+#include "firing_component.hpp"
 #include <OgreSceneNode.h>
 
 namespace fpsgame {
@@ -12,8 +13,6 @@ class FiringComponent {
   Ogre::Entity* bullet_physical_item_{};
 
  public:
-
-
   FiringComponent(FpsGame* game);
 
   void fire();
@@ -23,7 +22,9 @@ class FiringComponent {
   float* gravity_speed() { return &gravity_spped_; }
 
   void remove_bullet_from_screen();
-  
+
   bool collision(const Ogre::Entity* item) const;
+  const Ogre::Vector3* bullet_position() const;
+  Ogre::Vector3 bullet_center() const;
 };
 }  // namespace fpsgame

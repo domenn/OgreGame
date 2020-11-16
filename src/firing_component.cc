@@ -44,5 +44,15 @@ void fpsgame::FiringComponent::remove_bullet_from_screen() {
 }
 
 bool fpsgame::FiringComponent::collision(const Ogre::Entity* const item) const {
- return   bullet_node_ && item->getWorldBoundingBox().contains(bullet_node_->getPosition());
+  return bullet_node_ && item->getWorldBoundingBox().contains(bullet_node_->getPosition());
+}
+
+const Ogre::Vector3* fpsgame::FiringComponent::bullet_position() const {
+  assert(bullet_node_);
+  return &bullet_node_->getPosition();
+}
+
+Ogre::Vector3 fpsgame::FiringComponent::bullet_center() const {
+  assert(bullet_node_);
+  return bullet_physical_item_->getWorldBoundingSphere().getCenter();
 }

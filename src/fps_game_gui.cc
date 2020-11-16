@@ -76,6 +76,27 @@ void fpsgame::FpsGameGui::plane_tools() {
   }
 }
 
+void fpsgame::FpsGameGui::info_text() {
+  ImVec2 screen_top_left = ImGui::GetIO().DisplaySize;
+  screen_top_left.x *= 0.02f;
+  screen_top_left.y *= 0.012f;
+
+  ImGui::SetNextWindowPos(screen_top_left);
+  ImGui::SetNextWindowSize(ImVec2(800,60));
+  ImGui::SetNextWindowBgAlpha(0.6f);
+
+  ImGui::Begin("info_text",
+               nullptr,
+               ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                   ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoInputs);
+
+  ImGui::TextColored(ImVec4(0.7f, 0, 0.1f, 1), "CONTROLS: F show/hide cursor; G camera modes; Q show/hide configurator.");
+  ImGui::TextColored(ImVec4(0.7f, 0, 0.1f, 1), "Obstacles on screen: ", 0);
+  ImGui::TextColored(ImVec4(0.7f, 0, 0.1f, 1), "Score: %d", game_->score_);
+
+  ImGui::End();
+}
+
 void fpsgame::FpsGameGui::frame_started() {
   Ogre::ImGuiOverlay::NewFrame();
 
@@ -127,6 +148,7 @@ void fpsgame::FpsGameGui::frame_started() {
   }
 
   crosshair();
+  info_text();
 
   if (game_->gun_node_can_be_positioned_) {
     game_->gun_node_can_be_positioned_->setPosition(gun_position_[0], gun_position_[1], gun_position_[2]);
