@@ -8,15 +8,14 @@
 #include <OgreImGuiInputListener.h>
 // This include is necessary. Otherwise we get compile-error with regarding unique_ptr and the destructor.
 #include <OgreOverlaySystem.h>
+#include <chrono>
+#include <thread>
 
 using namespace Ogre;
 using namespace OgreBites;
 
 void fpsgame::Improved2dAxisAlignedBox::clip_scene_node_inside_plus_x(Ogre::SceneNode* receiver) const {
   const auto& pos = receiver->getPosition();
-  // return(v.x >= mMinimum.x  &&  v.x <= mMaximum.x  &&
-  //    v.y >= mMinimum.y  &&  v.y <= mMaximum.y  &&
-  //    v.z >= mMinimum.z  &&  v.z <= mMaximum.z);
 
   if (pos.x < 0) {
     receiver->setPosition(0, pos.y, pos.z);
@@ -41,12 +40,20 @@ void fpsgame::FpsGame::setup() {
 }
 
 bool fpsgame::FpsGame::frameStarted(const Ogre::FrameEvent& evt) {
+  if (evt.timeSinceLastFrame != 0.f) {
+    frames_per_second_.add_frame_time(evt.timeSinceLastFrame);
+    frame_time_ = evt.timeSinceLastFrame;
+  }
   OgreBites::ApplicationContext::frameStarted(evt);
 
   fps_game_gui_.frame_started();
   firing_component_.frame();
   obstacle_system_.frame();
   wasd_move();
+  // artificially limit FPS, so ridiculously high numbers can't screw with us ...
+  if (frames_per_second_.get_fps() > 300) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  }
 
   return true;
 }
@@ -87,8 +94,28 @@ bool fpsgame::FpsGame::keyPressed(const OgreBites::KeyboardEvent& evt) {
 bool fpsgame::FpsGame::mouseMoved(const OgreBites::MouseMotionEvent& evt) {
   imgui_listener_->mouseMoved(evt);
   camera_man_->mouseMoved(evt);
-  const auto& camera_direction = the_only_camera_node_->getOrientation();
-  const auto& direction_vector = camera_direction.zAxis() * -1;
+
+  const auto& orientation = the_only_camera_node_->getOrientation();
+  Ogre::Matrix3 my_matrix_3;
+  orientation.ToRotationMatrix(my_matrix_3);
+  Ogre::Radian pitch, yaw, roll;
+  my_matrix_3.ToEulerAnglesYXZ(yaw, pitch, roll);
+  player_pitch_ = pitch.valueRadians();
+  player_yaw_ = yaw.valueRadians();
+  player_roll_ = roll.valueRadians();
+
+  // Canceled attempt to prevent pitch above 90 degrees and below -90.
+
+  /*if (player_pitch_ > 1.570796f) {
+    my_matrix_3.FromEulerAnglesYXZ(yaw, Ogre::Radian(1.570796f), roll);
+    Quaternion new_o(my_matrix_3);
+    the_only_camera_node_->setOrientation(new_o);
+  }
+  if (player_pitch_ < -1.570796f) {
+    my_matrix_3.FromEulerAnglesYXZ(yaw, Ogre::Radian(-1.570796f), roll);
+    Quaternion new_o(my_matrix_3);
+    the_only_camera_node_->setOrientation(new_o);
+  }*/
 
   return true;
 }
@@ -106,8 +133,7 @@ bool fpsgame::FpsGame::mouseReleased(const OgreBites::MouseButtonEvent& evt) {
 }
 
 bool fpsgame::FpsGame::mouseWheelRolled(const OgreBites::MouseWheelEvent& evt) {
-  move_speed_ += static_cast<float>(evt.y) * 1.2f;
-  log_->logMessage("Speed is now " + std::to_string(move_speed_));
+  imgui_listener_->mouseWheelRolled(evt);
   camera_man_->mouseWheelRolled(evt);
   return true;
 }
@@ -120,7 +146,7 @@ bool fpsgame::FpsGame::keyReleased(const OgreBites::KeyboardEvent& evt) {
   }
   if (evt.keysym.sym >= SDLK_SPACE && evt.keysym.sym <= 'w') {
     key_latch_[evt.keysym.sym] = false;
-    if(evt.keysym.sym == 'q') {
+    if (evt.keysym.sym == 'q') {
       fps_game_gui_.flip_settings();
     }
   }
@@ -161,22 +187,23 @@ void fpsgame::FpsGame::recreate_plane() {
       AxisAlignedBox(-plane_extremes, -10.f, -plane_extremes, plane_extremes, 3000, plane_extremes);
 }
 
+void fpsgame::FpsGame::move_player(Ogre::Vector3&& direction) {
+  move_within_xz(the_only_camera_node_, std::move(direction));
+  bounding_box_playing_field_.clip_scene_node_inside_plus_x(the_only_camera_node_);
+}
+
 void fpsgame::FpsGame::wasd_move() {
   if (key_latch_['w']) {
-    move_within_xz(the_only_camera_node_, the_only_camera_node_->getOrientation().zAxis() * -1);
-    bounding_box_playing_field_.clip_scene_node_inside_plus_x(the_only_camera_node_);
+    move_player(the_only_camera_node_->getOrientation().zAxis() * -1);
   }
   if (key_latch_['s']) {
-    move_within_xz(the_only_camera_node_, (the_only_camera_node_->getOrientation().zAxis()));
-    bounding_box_playing_field_.clip_scene_node_inside_plus_x(the_only_camera_node_);
+    move_player(the_only_camera_node_->getOrientation().zAxis());
   }
   if (key_latch_['a']) {
-    move_within_xz(the_only_camera_node_, the_only_camera_node_->getOrientation().xAxis() * -1);
-    bounding_box_playing_field_.clip_scene_node_inside_plus_x(the_only_camera_node_);
+    move_player(the_only_camera_node_->getOrientation().xAxis() * -1);
   }
   if (key_latch_['d']) {
-    move_within_xz(the_only_camera_node_, (the_only_camera_node_->getOrientation().xAxis()));
-    bounding_box_playing_field_.clip_scene_node_inside_plus_x(the_only_camera_node_);
+    move_player(the_only_camera_node_->getOrientation().xAxis());
   }
 }
 
@@ -187,7 +214,7 @@ void fpsgame::FpsGame::make_forward(Ogre::Vector3& v) {
 
 void fpsgame::FpsGame::move_within_xz(Ogre::SceneNode* const node, Ogre::Vector3&& raw_vector) {
   make_forward(raw_vector);
-  raw_vector *= move_speed_;
+  raw_vector *= move_speed_ * frame_time_;
   node->translate(raw_vector);
 }
 

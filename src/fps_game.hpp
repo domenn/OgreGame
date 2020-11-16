@@ -1,6 +1,7 @@
 #pragma once
 #include "firing_component.hpp"
 #include "fps_game_gui.hpp"
+#include "frames_per_second.hpp"
 #include "obstacle_system.hpp"
 #include <OgreApplicationContext.h>
 #include <OgreRenderTargetListener.h>
@@ -42,13 +43,18 @@ class FpsGame : public OgreBites::ApplicationContext, public OgreBites::InputLis
   // Waste of memory. But who cares, this is a practice assignment, and PCs have "limitless" anyway ;)
   bool key_latch_['w' + 1]{};
 
-  float move_speed_{3.f};
+  float move_speed_{1080.f};
+  float frame_time_{0.008333f};
+  float player_pitch_{0};
+  float player_yaw_{0};
+  float player_roll_{0};
   bool mouse_grab_{true};
   int score_{0};
 
   FpsGameGui fps_game_gui_{this};
   FiringComponent firing_component_{this};
   ObstacleSystem obstacle_system_{this};
+  FramesPerSecond frames_per_second_{};
   Ogre::Log* log_{};
 
   Ogre::Entity* player_entity_{};
@@ -81,6 +87,7 @@ class FpsGame : public OgreBites::ApplicationContext, public OgreBites::InputLis
   bool frameRenderingQueued(const Ogre::FrameEvent& evt) override;
   bool keyReleased(const OgreBites::KeyboardEvent& evt) override;
   void recreate_plane();
+  void move_player(Ogre::Vector3&& direction);
   void wasd_move();
 
   static void make_forward(Ogre::Vector3& v);

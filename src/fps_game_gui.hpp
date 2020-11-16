@@ -29,6 +29,8 @@ class FpsGameGui {
 
   void plane_tools();
   void info_text();
+  void dbg_text();
+  // void balistics();
   void frame_started();
   void setup_imgui(Ogre::SceneManager* scene_manager);
   void flip_settings() { settings_on_ = !settings_on_; }

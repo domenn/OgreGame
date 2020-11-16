@@ -82,7 +82,7 @@ void fpsgame::FpsGameGui::info_text() {
   screen_top_left.y *= 0.012f;
 
   ImGui::SetNextWindowPos(screen_top_left);
-  ImGui::SetNextWindowSize(ImVec2(800,60));
+  ImGui::SetNextWindowSize(ImVec2(800, 86));
   ImGui::SetNextWindowBgAlpha(0.6f);
 
   ImGui::Begin("info_text",
@@ -90,12 +90,43 @@ void fpsgame::FpsGameGui::info_text() {
                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
                    ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoInputs);
 
-  ImGui::TextColored(ImVec4(0.7f, 0, 0.1f, 1), "CONTROLS: F show/hide cursor; G camera modes; Q show/hide configurator.");
-  ImGui::TextColored(ImVec4(0.7f, 0, 0.1f, 1), "Obstacles on screen: ", 0);
+  ImGui::TextColored(ImVec4(0.7f, 0, 0.1f, 1),
+                     "CONTROLS: F show/hide cursor; G camera modes; Q show/hide configurator.");
+  ImGui::TextColored(ImVec4(0.7f, 0, 0.1f, 1), "FPS: %.1f", game_->frames_per_second_.get_fps());
+  ImGui::TextColored(ImVec4(0.7f, 0, 0.1f, 1), "Obstacles on screen: %zu", game_->obstacle_system_.how_many());
   ImGui::TextColored(ImVec4(0.7f, 0, 0.1f, 1), "Score: %d", game_->score_);
 
   ImGui::End();
 }
+
+void fpsgame::FpsGameGui::dbg_text() {
+  const auto& o = game_->the_only_camera_node_->getOrientation();
+
+  ImGui::Begin("Debug status");
+  ImGui::Text("Yaw degrees %f", Ogre::Radian(game_->player_pitch_).valueDegrees());
+  ImGui::Text("Orientation xyzw %f %f %f %f", o.x, o.y, o.z, o.w);
+  ImGui::Text("Yaw Pitch Roll %f %f %f",
+              Ogre::Radian(game_->player_yaw_).valueDegrees(),
+              Ogre::Radian(game_->player_pitch_).valueDegrees(),
+              Ogre::Radian(game_->player_roll_).valueDegrees());
+  ImGui::End();
+}
+
+//
+// void fpsgame::FpsGameGui::balistics() {
+//  // game_->firing_component_.balistic_
+//
+//  ImGui::Begin("plots");
+//  ImGui::PlotLines("ty",
+//                   game_->firing_component_.balistic_.history_y_dbg.data(),
+//                   game_->firing_component_.balistic_.history_y_dbg.size(),
+//                   0,
+//                   0,
+//                   FLT_MAX,
+//                   FLT_MAX,
+//                   ImVec2(600, 600));
+//  ImGui::End();
+//}
 
 void fpsgame::FpsGameGui::frame_started() {
   Ogre::ImGuiOverlay::NewFrame();
@@ -129,9 +160,9 @@ void fpsgame::FpsGameGui::frame_started() {
     ImGui::DragFloat4("GunRotation(wxyz)", gun_rotation_, 0.001f, -4, 4);
     moving_camera = ImGui::DragFloat3("CameraPosition", camera_position_, 1, -2600, 2600);
     ImGui::DragFloat("Scale", &gun_scale_, 0.01f, -26, 26);
-    ImGui::DragFloat("Movement Speed", &game_->move_speed_, 0.25f, 1, 20);
-    ImGui::DragFloat("Bullet speed", game_->firing_component_.bullet_speed(), 1.f, -1, 2600);
-    ImGui::DragFloat("Bullet gravity", game_->firing_component_.gravity_speed(), 0.01f, -0.0001f, -0.0000001f);
+    ImGui::DragFloat("Movement Speed", &game_->move_speed_, 200.f, 500.f, 10000.f);
+    ImGui::DragFloat("Bullet speed", game_->firing_component_.bullet_speed(), 1000.f, 1000.f, 10000000.f);
+    ImGui::DragFloat("Bullet gravity", game_->firing_component_.gravity(), 0.01f, 10.f, 1000.f);
     ImGui::DragInt("Min obstacles", game_->obstacle_system_.min_obstacles(), 1, 1, 199);
     if (*game_->obstacle_system_.min_obstacles() > *game_->obstacle_system_.max_obstacles()) {
       *game_->obstacle_system_.max_obstacles() = *game_->obstacle_system_.min_obstacles();
@@ -145,6 +176,7 @@ void fpsgame::FpsGameGui::frame_started() {
     ImGui::End();
 
     plane_tools();
+    dbg_text();
   }
 
   crosshair();

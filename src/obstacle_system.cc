@@ -60,8 +60,6 @@ void ObstacleSystem::make_obstacles() {
 ObstacleSystem::ObstacleSystem(FpsGame* game) : game_(game), guns_(&game->firing_component_) {}
 
 void ObstacleSystem::score(std::vector<ObstacleOgrePtrs>::const_iterator obstacle) {
-  // Let's take a look xy surface. Center is top score.
-  // auto pane_center = obstacle->node_->getPosition().xy() + obstacle->node_->getScale().xy();
   std::ostringstream oss;
 
   const auto bullet_center3 = guns_->bullet_center();
@@ -69,8 +67,7 @@ void ObstacleSystem::score(std::vector<ObstacleOgrePtrs>::const_iterator obstacl
   const Ogre::Vector2 block_center(obstacle->node_->getPosition().z, obstacle->node_->getPosition().y);
   const Ogre::Vector2 bullet_center(bullet_center3.z, bullet_center3.y);
 
-  // Up to 100 points based on distance.
-
+  // Up to 100 points based on distance from block-pane (front) center. Center of pane scores more.
   const auto& bounding_box_corner =
       obstacle->physical_thing_->getWorldBoundingBox().getCorner(Ogre::AxisAlignedBox::FAR_RIGHT_TOP);
 

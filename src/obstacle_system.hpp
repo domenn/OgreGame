@@ -35,6 +35,7 @@ class ObstacleSystem {
   float* obstacle_size_min() { return &obstacle_size_min_; }
   int* max_obstacles() { return &max_obstacles_; }
   int* min_obstacles() { return &min_obstacles_; }
+  size_t how_many() const { return obstacles_.size(); }
   void setup();
 };
 
